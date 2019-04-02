@@ -5,24 +5,51 @@
  * For more details take a look at the Java Libraries chapter in the Gradle
  * User Manual available at https://docs.gradle.org/5.2.1/userguide/java_library_plugin.html
  */
+buildscript {
 
-plugins {
-    // Apply the java-library plugin to add support for Java Library
-    id 'java-library'
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
+    }
 }
 
+apply plugin: 'java-library'
+apply plugin: 'com.google.protobuf'
+
 repositories {
-    // Use jcenter for resolving your dependencies.
-    // You can declare any Maven/Ivy/file repository here.
+    google()
     jcenter()
+    mavenCentral()
+}
+
+protobuf {
+
+    protoc {
+        // Download from repositories
+        artifact = 'com.google.protobuf:protoc:3.6.1'
+    }
+
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+            }
+        }
+    }
 }
 
 dependencies {
-    // This dependency is exported to consumers, that is to say found on their compile classpath.
-    api 'org.apache.commons:commons-math3:3.6.1'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
+    /* generate protobuf files */
+    compile files('src/main/proto')
+
     implementation 'com.google.guava:guava:27.0.1-jre'
+    implementation 'com.google.protobuf:protobuf-java:3.6.1'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
