@@ -18,39 +18,15 @@ buildscript {
     }
 }
 
-apply plugin: 'java-library'
-apply plugin: 'com.google.protobuf'
 
-repositories {
-    google()
-    jcenter()
-    mavenCentral()
+allprojects {
+	repositories {
+		google()
+		jcenter()
+		mavenCentral()
+	}
 }
 
-protobuf {
-
-    protoc {
-        // Download from repositories
-        artifact = 'com.google.protobuf:protoc:3.6.1'
-    }
-
-    generateProtoTasks {
-        all().each { task ->
-            task.builtins {
-            }
-        }
-    }
-}
-
-dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-
-    /* generate protobuf files */
-    compile files('src/main/proto')
-
-    implementation 'com.google.guava:guava:27.0.1-jre'
-    implementation 'com.google.protobuf:protobuf-java:3.6.1'
-
-    // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
