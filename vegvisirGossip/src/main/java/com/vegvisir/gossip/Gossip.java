@@ -3,6 +3,7 @@ package com.vegvisir.gossip;
 import com.vegvisir.gossip.adapter.NetworkAdapter;
 import com.vegvisir.network.datatype.proto.Payload;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,27 +30,44 @@ public class Gossip {
     }
 
     /**
-     * Randomly choose a wake-up peer.
+     * [BLOCKING] Randomly choose a wake-up peer. This is a blocking method.
      * @return
      */
     public String randomPickAPeer() {
-        List<String> view = adapter.getNearbyDevices();
+        List<String> view = adapter.getAvailableConnections(); // This call is blocking
+        Collections.shuffle(view, rnd);
         String next;
-        do {
-            next = view.get(rnd.nextInt(view.size()));
+        for (int i = 0; i < view.size(); i ++)
+        {
+            next = view.get(i);
             if (!connections.containsKey(next))
                 connections.put(next, new GossipConnection(next));
-        } while (!connections.get(next).isWakeup());
-        return next;
+            connections.get(next).setConnected();
+            if (connections.get(next).isWakeup())
+                return next;
+        }
+        return null;
+    }
+
+    /**
+     * A view is a list of device ids that have been discovered by this node.
+     * @return
+     */
+    public List<String> getNearbyView() {
+        return adapter.getNearbyDevices();
     }
 
     /**
      * Send given payload to peer with id. Upper call from Blockchain
      * @param id
      * @param payload
+     * @return true if remote side is still connected.
      */
-    public void sendToPeer(String id, Payload payload) {
-        adapter.sendBlock(id, payload);
+    public boolean sendToPeer(String id, Payload payload) {
+        boolean alive = adapter.sendBlock(id, payload);
+        if (!alive)
+            connections.get(id).disconnect();
+        return alive;
     }
 
     /**

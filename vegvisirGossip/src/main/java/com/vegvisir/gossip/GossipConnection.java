@@ -26,6 +26,7 @@ public class GossipConnection {
     public GossipConnection(String id) {
         this.id = id;
         timeToWakeup = 0L;
+        connected = true;
     }
 
     public String getId() {
