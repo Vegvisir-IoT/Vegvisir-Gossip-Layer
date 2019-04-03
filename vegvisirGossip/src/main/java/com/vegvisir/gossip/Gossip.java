@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Consumer;
 
 public class Gossip {
 
@@ -80,6 +81,27 @@ public class Gossip {
             return connections.get(id).blockingGet();
         }
         return null;
+    }
+
+    /**
+     * [NEW THREAD] This will dispatch a new thread to keep listening on new payloads.
+     * The thread will be removed if remote side is disconnected.
+     * @param id
+     * @param handler
+     */
+    public void setHandlerForPeerMessage(String id, Consumer<Payload> handler) {
+        new Thread(() -> {
+            if (!connections.containsKey(id))
+                return;
+            while (true) {
+                try {
+                    handler.accept(connections.get(id).blockingGet());
+                } catch (InterruptedException ex) {
+                    if (!connections.get(id).isConnected())
+                        return;
+                }
+            }
+        }).start();
     }
 
     /**

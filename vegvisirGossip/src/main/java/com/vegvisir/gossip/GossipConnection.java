@@ -3,9 +3,10 @@ package com.vegvisir.gossip;
 import com.vegvisir.network.datatype.proto.Payload;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import com.vegvisir.network.datatype.proto.Location;
+import com.vegvisir.common.datatype.proto.Location;
 
 /**
  * This class stores basic information related to a peer node's connection.
@@ -22,6 +23,8 @@ public class GossipConnection {
     private Long timeToWakeup;
 
     private BlockingQueue<Payload> receivingQueue = new LinkedBlockingQueue();
+
+    private Thread pollingThreads;
 
     public GossipConnection(String id) {
         this.id = id;
@@ -59,6 +62,7 @@ public class GossipConnection {
 
     public void disconnect() {
         this.connected = false;
+        clearPollingThread();
     }
 
     public void setConnected() {
@@ -72,4 +76,19 @@ public class GossipConnection {
     public Location getLocation() {
         return location;
     }
+
+    public void setPollingThreads(Thread pollingThreads) {
+        synchronized (this) {
+            this.pollingThreads = pollingThreads;
+        }
+    }
+
+    public void clearPollingThread() {
+        synchronized (this) {
+            if (pollingThreads != null) {
+                pollingThreads.interrupt();
+            }
+        }
+    }
+
 }
