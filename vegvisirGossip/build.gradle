@@ -8,6 +8,7 @@
 
 apply plugin: 'java-library'
 apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
 
 protobuf {
 
@@ -22,6 +23,11 @@ protobuf {
             }
         }
     }
+}
+
+idea {
+	module {}
+
 }
 
 dependencies {
