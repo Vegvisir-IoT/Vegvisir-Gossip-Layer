@@ -9,4 +9,5 @@
 
 //rootProject.name = 'Vegvisir-Gossip'
 
-include ':vegvisirGossip'
+include ':vegvisirGossip', ':vegvisirDatatype'
+project(':vegvisirDatatype').projectDir = new File('deps/VegvisirDatatype/vegvisirDatatype')

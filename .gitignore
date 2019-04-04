@@ -3,7 +3,7 @@
 
 # Ignore IDE config files
 .idea
-Vegvisir-Gossip.iml
+*.iml
 local.properties
 
 # Ignore Gradle build output directory
