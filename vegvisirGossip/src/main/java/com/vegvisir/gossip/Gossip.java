@@ -28,6 +28,7 @@ public class Gossip {
         connections = new HashMap<>();
         this.adapter = adapter;
         this.adapter.onReceiveBlock(this::onNewPayload);
+        this.adapter.onConnectionLost(this::onLostConnection);
     }
 
     /**
@@ -89,19 +90,51 @@ public class Gossip {
      * @param id
      * @param handler
      */
-    public void setHandlerForPeerMessage(String id, Consumer<Payload> handler) {
-        new Thread(() -> {
+    public Thread setHandlerForPeerMessage(String id, Consumer<Payload> handler) {
+        Thread dispatchThread = new Thread(() -> {
             if (!connections.containsKey(id))
                 return;
             while (true) {
                 try {
                     handler.accept(connections.get(id).blockingGet());
                 } catch (InterruptedException ex) {
-                    if (!connections.get(id).isConnected())
-                        return;
+                    return;
+//                    if (!connections.get(id).isConnected())
+//                        return;
                 }
             }
-        }).start();
+        });
+        dispatchThread.start();
+        return dispatchThread;
+    }
+
+    /**
+     * Set connection with @id to disconnected. This will also interrupt reconciliation instance thread that waiting for completing.
+     * @param id
+     */
+    public void onLostConnection(String id) {
+        if (connections.containsKey(id)) {
+            connections.get(id).disconnect();
+        }
+    }
+
+    /**
+     * Disconnect with a particular endpoint with @id. This call will wait until all the data has been sent to the remote side.
+     * @param id
+     */
+    public void disconnect(String id) {
+        adapter.disconnect(id);
+
+    }
+
+    /**
+     * Store reconciliation thread to connection object. We may need this in the future to interrupt reconciliation if connection is lost.
+     * @param id
+     * @param thread
+     */
+    public void linkReconciliationInstanceWithConnection(String id, Thread thread) {
+        if (connections.containsKey(id))
+            connections.get(id).setPollingThreads(thread);
     }
 
     /**

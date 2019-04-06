@@ -4,6 +4,7 @@ import com.vegvisir.network.datatype.proto.Payload;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public interface NetworkAdapter {
 
@@ -27,6 +28,13 @@ public interface NetworkAdapter {
      */
     public void onReceiveBlock(BiConsumer<String, Payload> handler);
 
+
+    /**
+     * Register a handler for a lost of connection.
+     * @param handler
+     */
+    public void onConnectionLost(Consumer<String> handler);
+
     /**
      * [BLOCKING] if there is no connection available.
      * @return a set of remote ids with which this node has been established connection.
@@ -38,5 +46,12 @@ public interface NetworkAdapter {
      * @return a set of strings which represent the id of nearby devices.
      */
     public List<String> getNearbyDevices();
+
+
+    /**
+     * Disconnect to a particular endpoint. Disconnecting should only happen after all data have been sent to the remote side.
+     * @param endpoint
+     */
+    public void disconnect(String endpoint);
 }
 
